@@ -1,0 +1,9 @@
+.tm_properties
+.hgignore
+.hgtags
+.hg/*
+.Trashes
+Thumbs.db
+.DS_Store
+.DS_Store?
+*.pyc
