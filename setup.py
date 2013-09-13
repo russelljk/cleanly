@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup, find_packages
 
 setup(name='cleanly',
       version='0.1',
@@ -12,7 +9,7 @@ setup(name='cleanly',
       author_email='russell.j.kyle@gmail.com',
       url='http://russellkyle.com/django-cleanly/',
       download_url='https://github.com/russelljk/cleanly/archive/master.zip',
-      packages=['cleanly'],
+      packages=find_packages(),
       include_package_data=True,
       install_requires = ['html5lib'],
       keywords=['HTML', 'HTML5', 'Django', 'XSS']

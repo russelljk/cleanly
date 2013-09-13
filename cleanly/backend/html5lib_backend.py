@@ -3,7 +3,13 @@ from html5lib import sanitizer, serializer, tokenizer, treebuilders, treewalkers
 
 __all__ = ['cleanup_html', 'sanitize_html', 'make_sanitizer', 'sanitizer_manager', 'run_sanitizer']
 
-def make_sanitizer(elements, attributes, css):
+'''
+Creates a custom sanitizer with the given a set of elements, attributes and css.
+elements - Tuple of HTML elements allowed. All others will be stripped out.
+attribues - List of attributes allowed on elements. All others will be stripped out.
+css - CSS properties allowed in the style attribute (if listed)
+'''
+def make_sanitizer(elements, attributes, css=()):
     class _Mixin(sanitizer.HTMLSanitizerMixin):
         acceptable_elements = elements
     
@@ -15,7 +21,7 @@ def make_sanitizer(elements, attributes, css):
         allowed_css_keywords = ()
         allowed_svg_properties = ()
     
-    class _Sanitizer(tokenizer.HTMLTokenizer, HTMLSanitizerMixin):
+    class _Sanitizer(tokenizer.HTMLTokenizer, _Mixin):
         def __init__(self, stream, encoding=None, parseMeta=True, useChardet=True,
                                  lowercaseElementName=True, lowercaseAttrName=True, parser=None):
             tokenizer.HTMLTokenizer.__init__(self, stream, encoding, parseMeta,
@@ -29,6 +35,10 @@ def make_sanitizer(elements, attributes, css):
                     yield token
     return _Sanitizer
 
+'''
+General purpose sanitizer. Good for blog posts, articles done by guest authors. Note that iframe 
+and object are excluded. So embeded videos will be stripped. Images and figures are allowed.
+'''
 HTMLSanitizer = make_sanitizer(
     elements = ( 'a', 'abbr', 'acronym', 'address', 'article', 'aside', 'b', 'bdi', 'bdo', 'big',
         'blockquote', 'br', 'caption', 'center', 'cite', 'code', 'col',
@@ -36,8 +46,7 @@ HTMLSanitizer = make_sanitizer(
         'figure', 'font', 'footer', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'heading', 'hr', 'i', 'img', 'ins', 'kbd',
         'li', 'mark', 'nav', 'ol', 'p', 'pre', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'small', 'span', 'strike',
         'strong', 'sub', 'sup', 'table', 'tbody', 'td', 'time', 'tfoot', 'th', 'thead',
-        'tr', 'u', 'ul', 'var', 'wbr'),
-    
+        'tr', 'u', 'ul', 'var', 'wbr'),    
     attributes = ( 'abbr', 'align', 'alt', 'axis', 'border',
         'cellpadding', 'cellspacing', 'char', 'charoff', 'charset', 'cite',
         'cols', 'colspan', 'datetime', 'dir', 'frame', 'headers', 'height',
@@ -49,19 +58,38 @@ HTMLSanitizer = make_sanitizer(
         'text-align', 'color'),    
 )
 
-HTMLRestrictedSanitizer = (
+'''
+Extremely restricted sanitizer. For site guests and unkown, untrusted sources.
+'''
+HTMLRestrictedSanitizer = make_sanitizer(
     elements = ('a', 'abbr', 'blockquote', 'br', 'code', 'em', 
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr', 'figcaption', 
         'figure', 'img', 'li', 'ol', 'p', 'pre', 'span', 'strike',
-        'strong', 'sub', 'sup', 'u', 'ul'),
-    
+        'strong', 'sub', 'sup', 'u', 'ul'),    
     attributes = ('alt', 'cite', 'height',
-        'href', 'span', 'style', 'src', 'title', 'width'),
-    
+        'href', 'span', 'style', 'src', 'title', 'width'),    
     css = ( 'text-decoration' , 'font-style', 'font-weight', 'text-justify', 
         'text-align', 'color'),            
 )
 
+'''
+Manages user defined sanitizers alongside the default ones. Default sanitizers can be overriden by
+modifying your settings.
+
+Example settings for custom 
+    CLEANILY_CONF = {
+        'MySanitizer': {
+            'elements': ('a', 'p', 'ul', 'li',),
+            'attributes': ('style', 'title', 'name', 'id', 'class'),
+            'css': ('text-align', 'color'),
+        },
+        'MyOtherSanitizer': {
+            'elements': ('div', 'span',),
+            'attributes': (),
+            'css': (),
+        }
+    }
+'''
 class SanitizerManager(object):
     def __init__(self):
         self.sanitizers = {}
@@ -72,7 +100,10 @@ class SanitizerManager(object):
     def lookup(self, name):
         try:
             return self.sanitizers[name]
-        except KeyError:
+        except KeyError:            
+            # There's bound to be a better place to stick this so that we can
+            # grab all custom configurations after Django is loaded (or reloaded).
+            
             # Look and see if the sanitizer is defined else where.
             from django.conf import settings
             cleanly_conf = getattr(settings, 'CLEANLY_CONF', None)
@@ -81,7 +112,7 @@ class SanitizerManager(object):
             if cleanly_conf is None:
                 raise
             
-            # Create the sanitizer and return it.
+            # Create the sanitizer then register and return it.
             conf = CLEANLY_CONF[name]
             sanitizer = make_sanitizer(**conf)
             self.register(name, sanitizer)

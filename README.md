@@ -67,10 +67,14 @@ In your settings.py file:
     CLEANILY_CONF = {
         'MySanitizer': {
             'elements': ('a', 'p', 'ul', 'li',),
-            'attributes': ('style', 'title', 'name', 'id', 'class')
+            'attributes': ('style', 'title', 'name', 'id', 'class'),
             'css': ('text-align', 'color'),
         },
-        'MyCleaner': ...
+        'MyOtherSanitizer': {
+            'elements': ('div', 'span',),
+            'attributes': (),
+            'css': (),
+        }
     }
 
 `CLEANILY_CONF` Should be a dictionary of sanitizer definitions. Each definition should be a dictionary containing tuple of the `elements`, `attributes` and `css` values allowed when cleaning html.
