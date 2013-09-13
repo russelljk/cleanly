@@ -5,8 +5,8 @@ __all__ = ['cleanup_html', 'sanitize_html', 'make_sanitizer', 'sanitizer_manager
 
 '''
 Creates a custom sanitizer with the given a set of elements, attributes and css.
-elements - Tuple of HTML elements allowed. All others will be stripped out.
-attribues - List of attributes allowed on elements. All others will be stripped out.
+elements - Tuple of HTML elements allowed. All others will be escaped.
+attribues - List of attributes allowed on elements.
 css - CSS properties allowed in the style attribute (if listed)
 '''
 def make_sanitizer(elements, attributes, css=()):
@@ -37,7 +37,7 @@ def make_sanitizer(elements, attributes, css=()):
 
 '''
 General purpose sanitizer. Good for blog posts, articles done by guest authors. Note that iframe 
-and object are excluded. So embeded videos will be stripped. Images and figures are allowed.
+and object are excluded. So embeded videos are out by default. Images and figures are allowed.
 '''
 HTMLSanitizer = make_sanitizer(
     elements = ( 'a', 'abbr', 'acronym', 'address', 'article', 'aside', 'b', 'bdi', 'bdo', 'big',
@@ -113,7 +113,7 @@ class SanitizerManager(object):
                 raise
             
             # Create the sanitizer then register and return it.
-            conf = CLEANLY_CONF[name]
+            conf = cleanly_conf[name]
             sanitizer = make_sanitizer(**conf)
             self.register(name, sanitizer)
             return sanitizer

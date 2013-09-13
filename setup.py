@@ -11,6 +11,7 @@ setup(name='cleanly',
       download_url='https://github.com/russelljk/cleanly/archive/master.zip',
       packages=find_packages(),
       include_package_data=True,
-      install_requires = ['html5lib'],
+      install_requires = ['html5lib>=0.9'],
+      zip_safe = False,
       keywords=['HTML', 'HTML5', 'Django', 'XSS']
 )

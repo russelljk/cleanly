@@ -40,7 +40,7 @@ This will cleanup open tags, unquoted attributes. See the html5lib documentation
 
 **Sanitize**, use for semi-trusted sources. 
 
-For instance an author that writes articles for your blog/website. The most dangerous tags are stripped, along side non-body tags like `html`, `head`, `link`, `style`.
+For instance an author that writes articles for your blog/website. The most dangerous tags are escaped, along side non-body tags like `html`, `head`, `link`, `style`.
 
     {% load 'cleanly' %}
 
@@ -48,7 +48,7 @@ For instance an author that writes articles for your blog/website. The most dang
     
 **Restricted**, use for untrusted sources. 
 
-For example comments on a blog, forum or other public website. Be careful and test for unexpected input before going live. You want to review the tags that are stripped by Cleanly beforehand and make sure it meets your needs.
+For example comments on a blog, forum or other public website. Be careful and test for unexpected input before going live. You want to review the tags that are escaped by Cleanly beforehand and make sure it meets your needs.
 
 Note that even if you are using **Markdown** or another HTML generator/markup language, you should still sanitize the results before displaying them.
 
@@ -83,9 +83,9 @@ Any value not listed will be removed when cleaned.
 
 To use it in your template simple do the following:
 
-    {% load 'cleanly' %}
+    {% load cleanly_tags %}
     
-    {{page.html|clean_with:'MySanitizer'}}
+    {{html|clean_with:'MySanitizer'}}
 
 ###TODO 
 
